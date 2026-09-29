@@ -90,8 +90,10 @@ docker-compose.override.yml
 # Logs
 *.log
 
-# Models
+# Models (downloaded weights). Source packages are kept.
 models/
+!oasis/models/
+!test/models/
 
 # Database files
 *.db

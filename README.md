@@ -125,6 +125,9 @@ export OPENAI_API_KEY=<insert your OpenAI API key>
 set OPENAI_API_KEY=<insert your OpenAI API key>
 ```
 
+> \[!TIP\]
+> Prefer a local open model? Run one with [Unsloth](https://unsloth.ai) (`unsloth run --model <model>`), export the `UNSLOTH_BASE_URL` and `UNSLOTH_API_KEY` it prints, and pass `oasis.make_unsloth_model()` as the agents' model. See `examples/twitter_simulation_unsloth.py` and the [Unsloth section of the docs](https://docs.oasis.camel-ai.org/quickstart#using-local-models-served-by-unsloth).
+
 3. **Prepare the agent profile file:**
 
 Create the profile you want to assign to the agent. As an example, you can download [user_data_36.json](https://github.com/camel-ai/oasis/blob/main/data/reddit/user_data_36.json) and place it in your local `./data/reddit` folder.

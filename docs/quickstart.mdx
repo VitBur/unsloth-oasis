@@ -301,3 +301,59 @@ OASIS supports different types of LLM backends for running simulations. Choose t
     ```
   </Accordion>
 </AccordionGroup>
+
+### Using local models served by Unsloth
+
+[Unsloth](https://unsloth.ai) Studio, Unsloth Desktop and the `unsloth run` CLI expose the model they have loaded as a local, OpenAI-compatible API with tool calling, which is all OASIS agents need. This works on macOS, Windows and Linux, including machines without an NVIDIA GPU.
+
+<AccordionGroup>
+  <Accordion icon="server" title="Start a model with Unsloth">
+    1. Install Unsloth following the [Unsloth docs](https://unsloth.ai/docs).
+
+    2. Load and serve a model. Any chat model that supports tool calling works; smaller models are faster for large agent counts:
+    ```bash
+    unsloth run --model unsloth/gemma-3-4b-it-GGUF:Q4_K_M
+    ```
+    Unsloth prints the base URL (for example `http://localhost:8000`) and an API key starting with `sk-unsloth-`. In Unsloth Studio you can create a key under **Settings > API**.
+
+    3. Export them so OASIS can find the server:
+    ```bash
+    export UNSLOTH_BASE_URL=http://localhost:8000
+    export UNSLOTH_API_KEY=sk-unsloth-...
+    # Optional: only needed when several models are loaded
+    export UNSLOTH_MODEL=unsloth/gemma-3-4b-it-GGUF:Q4_K_M
+    ```
+
+    4. Check the server answers:
+    ```bash
+    curl -H "Authorization: Bearer $UNSLOTH_API_KEY" $UNSLOTH_BASE_URL/v1/models
+    ```
+  </Accordion>
+  <Accordion icon="play" title="Run a simulation with the Unsloth model">
+    `oasis.make_unsloth_model()` returns a CAMEL model backend pointed at your Unsloth server. When no model name is given it asks the server which model is loaded. Use it wherever the other examples pass an OpenAI or VLLM model:
+    ```python
+    import oasis
+    from oasis import make_unsloth_model, generate_twitter_agent_graph
+
+    # Everything read from UNSLOTH_BASE_URL / UNSLOTH_API_KEY / UNSLOTH_MODEL
+    unsloth_model = make_unsloth_model()
+
+    # ...or pass values explicitly, plus any generation settings
+    unsloth_model = make_unsloth_model(
+        model_type="unsloth/gemma-3-4b-it-GGUF:Q4_K_M",
+        url="http://localhost:8000",
+        api_key="sk-unsloth-...",
+        model_config_dict={"temperature": 0.7},
+    )
+
+    agent_graph = await generate_twitter_agent_graph(
+        profile_path="./data/twitter_dataset/anonymous_topic_200_1h/False_Business_0.csv",
+        model=unsloth_model,
+        available_actions=oasis.ActionType.get_default_twitter_actions(),
+    )
+    ```
+    Complete scripts: `examples/twitter_simulation_unsloth.py` and `examples/reddit_simulation_unsloth.py`.
+
+    To spread load over several Unsloth servers, create one model per server and wrap them in a `camel.models.ModelManager`, as in the VLLM example above.
+  </Accordion>
+</AccordionGroup>
